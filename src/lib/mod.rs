@@ -17,6 +17,7 @@
 */
 
 pub mod color;
+pub mod combat;
 pub mod config;
 pub mod damage;
 pub mod db;

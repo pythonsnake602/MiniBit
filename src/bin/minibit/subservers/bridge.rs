@@ -23,6 +23,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 use bevy_ecs::query::QueryData;
+use minibit_lib::combat;
 use minibit_lib::color::ArmorColors;
 use minibit_lib::config::WorldValue;
 use minibit_lib::damage::calc_dmg;
@@ -42,17 +43,13 @@ use valence::interact_item::InteractItemEvent;
 use valence::inventory::HeldItem;
 use valence::inventory::PlayerAction;
 use valence::math::IVec3;
-use valence::math::Vec3Swizzles;
 use valence::nbt::compound;
 use valence::nbt::List;
 use valence::prelude::*;
-use valence::protocol::packets::play::DamageTiltS2c;
 use valence::protocol::packets::play::ExperienceBarUpdateS2c;
 use valence::protocol::packets::play::PlayerActionC2s;
 use valence::protocol::sound::SoundCategory;
 use valence::protocol::Sound;
-use valence::protocol::VarInt;
-use valence::protocol::WritePacket;
 
 #[derive(Event)]
 struct DeathEvent(Entity, bool);
@@ -446,6 +443,12 @@ struct CombatQuery {
     inv: &'static Inventory,
 }
 
+impl combat::HasCombatState for CombatQueryItem<'_> {
+    fn get_combat_state(&mut self) -> &mut CombatState {
+        self.state
+    }
+}
+
 fn handle_combat_events(
     server: Res<Server>,
     mut clients: Query<CombatQuery>,
@@ -453,11 +456,7 @@ fn handle_combat_events(
     mut interact_entity: EventReader<InteractEntityEvent>,
     mut deaths: EventWriter<DeathEvent>,
 ) {
-    for &SprintEvent { client, state } in sprinting.read() {
-        if let Ok(mut client) = clients.get_mut(client) {
-            client.state.has_bonus_knockback = state == SprintState::Start;
-        }
-    }
+    combat::handle_sprint_events(&mut sprinting, &mut clients);
 
     for &InteractEntityEvent {
         client: attacker_client,
@@ -471,31 +470,29 @@ fn handle_combat_events(
             continue;
         };
 
-        if interaction != EntityInteraction::Attack
-            || server.current_tick() - victim.state.last_attacked_tick < 10
-            || attacker.gamestate.team == victim.gamestate.team
-            || attacker.gamestate.game_id != victim.gamestate.game_id
-        {
+        if !combat::should_process_combat_with_teams(
+            interaction,
+            server.current_tick(),
+            victim.state.last_attacked_tick,
+            attacker.gamestate.team,
+            victim.gamestate.team,
+            attacker.gamestate.game_id,
+            victim.gamestate.game_id,
+        ) {
             continue;
         }
 
         victim.state.last_attacked_tick = server.current_tick();
 
-        let victim_pos = victim.pos.0.xz();
-        let attacker_pos = attacker.pos.0.xz();
-
-        let dir = (victim_pos - attacker_pos).normalize().as_vec2();
-
-        let knockback_xz = if attacker.state.has_bonus_knockback {
-            18.0
-        } else {
-            8.0
-        };
-        let knockback_y = if attacker.state.has_bonus_knockback {
-            8.432
-        } else {
-            6.432
-        };
+        let velocity = combat::apply_combat_effects(
+            attacker.client,
+            attacker.id,
+            attacker.pos,
+            attacker.state.has_bonus_knockback,
+            victim.client,
+            victim.id,
+            victim.pos,
+        );
 
         let dmg = calc_dmg_with_weapon(
             attacker.inv.slot(attacker.held_item.slot()).item,
@@ -509,11 +506,9 @@ fn handle_combat_events(
             &mut attacker,
             &mut victim,
             dmg,
-            Vec3::new(dir.x * knockback_xz, knockback_y, dir.y * knockback_xz),
+            velocity,
             &mut deaths,
         );
-
-        attacker.state.has_bonus_knockback = false;
     }
 }
 
@@ -758,29 +753,6 @@ fn damage_player(
     victim.client.set_velocity(old_vel + velocity);
 
     attacker.state.has_bonus_knockback = false;
-
-    victim.client.play_sound(
-        Sound::EntityPlayerHurt,
-        SoundCategory::Player,
-        victim.pos.0,
-        1.0,
-        1.0,
-    );
-    victim.client.write_packet(&DamageTiltS2c {
-        entity_id: VarInt(0),
-        yaw: 0.0,
-    });
-    attacker.client.play_sound(
-        Sound::EntityPlayerHurt,
-        SoundCategory::Player,
-        victim.pos.0,
-        1.0,
-        1.0,
-    );
-    attacker.client.write_packet(&DamageTiltS2c {
-        entity_id: VarInt(victim.id.get()),
-        yaw: 0.0,
-    });
 
     victim.state.last_attacker = Some(attacker.entity);
 
