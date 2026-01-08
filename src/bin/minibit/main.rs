@@ -40,6 +40,7 @@ fn main() {
         subserver!(bedwars),
         subserver!(bowfight),
         subserver!(boxing),
+        subserver!(boxmix12),
         subserver!(bridge),
         subserver!(classic),
         subserver!(parkour),
