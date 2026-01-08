@@ -44,15 +44,11 @@ use valence::interact_item::InteractItemEvent;
 use valence::inventory::HeldItem;
 use valence::inventory::PlayerAction;
 use valence::math::IVec3;
-use valence::math::Vec3Swizzles;
 use valence::nbt::compound;
 use valence::prelude::*;
-use valence::protocol::packets::play::DamageTiltS2c;
 use valence::protocol::packets::play::PlayerActionC2s;
 use valence::protocol::sound::SoundCategory;
 use valence::protocol::Sound;
-use valence::protocol::VarInt;
-use valence::protocol::WritePacket;
 
 #[derive(Event)]
 struct DeathEvent(Entity, bool);
@@ -321,7 +317,7 @@ struct CombatQuery {
 
 impl combat::HasCombatState for CombatQueryItem<'_> {
     fn get_combat_state(&mut self) -> &mut CombatState {
-        self.state
+        &mut *self.state
     }
 }
 
@@ -361,11 +357,11 @@ fn handle_combat_events(
         victim.state.last_attacked_tick = server.current_tick();
 
         let velocity = combat::apply_combat_effects(
-            attacker.client,
+            &mut *attacker.client,
             attacker.id,
             attacker.pos,
             attacker.state.has_bonus_knockback,
-            victim.client,
+            &mut *victim.client,
             victim.id,
             victim.pos,
         );

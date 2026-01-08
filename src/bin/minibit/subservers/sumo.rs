@@ -48,7 +48,7 @@ struct CombatQuery {
 
 impl combat::HasCombatState for CombatQueryItem<'_> {
     fn get_combat_state(&mut self) -> &mut CombatState {
-        self.state
+        &mut *self.state
     }
 }
 
@@ -85,11 +85,11 @@ fn handle_combat_events(
         victim.state.last_attacked_tick = server.current_tick();
 
         let velocity = combat::apply_combat_effects(
-            attacker.client,
+            &mut *attacker.client,
             attacker.id,
             attacker.pos,
             attacker.state.has_bonus_knockback,
-            victim.client,
+            &mut *victim.client,
             victim.id,
             victim.pos,
         );
