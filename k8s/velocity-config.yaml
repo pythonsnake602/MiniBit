@@ -49,7 +49,7 @@ data:
 
     # Announce whether or not your server supports Forge. If you run a modded server, we
     # suggest turning this on.
-    # 
+    #
     # If your network runs one modpack consistently, consider using ping-passthrough = "mods"
     # instead for a nicer display in the server list.
     announce-forge = false
@@ -71,7 +71,7 @@ data:
     #                  description and mod list.
     # - "all":         Uses the backend server's response as the proxy response. The Velocity
     #                  configuration is used if no servers could be contacted.
-    ping-passthrough = "DISABLED"
+    ping-passthrough = "disabled"
 
     # If not enabled (default is true) player IP addresses will be replaced by <ip address withheld> in logs
     enable-player-address-logging = true

@@ -9,7 +9,7 @@ minibit:
     repository: pythonsnake602/minibit
     tag: latest
     pullPolicy: IfNotPresent
-  
+
   resources:
     requests:
       memory: "1Gi"
@@ -17,7 +17,7 @@ minibit:
     limits:
       memory: "4Gi"
       cpu: "2000m"
-  
+
   replicas: 1
 
 velocity:
@@ -25,7 +25,7 @@ velocity:
     repository: pythonsnake602/minibit-velocity
     tag: latest
     pullPolicy: IfNotPresent
-  
+
   resources:
     requests:
       memory: "512Mi"
@@ -33,7 +33,7 @@ velocity:
     limits:
       memory: "2Gi"
       cpu: "1000m"
-  
+
   replicas: 1
 
 # Service Configuration
@@ -43,11 +43,11 @@ service:
   # NodePort: Exposes service on each node's IP at a static port
   # ClusterIP: Only accessible within the cluster
   type: LoadBalancer
-  
+
   # For NodePort type, you can specify a port (30000-32767)
   # Leave empty for automatic assignment
   nodePort: ""
-  
+
   # Minecraft server port
   port: 25565
 
@@ -55,11 +55,11 @@ service:
 storage:
   # Size of persistent volume for world data and configs
   size: 5Gi
-  
+
   # Storage class name (leave empty for default)
   # Examples: standard, gp2, fast-ssd, etc.
   storageClassName: ""
-  
+
   # Access mode
   accessMode: ReadWriteOnce
 
@@ -75,7 +75,7 @@ velocityConfig:
   maxPlayers: 500
   onlineMode: true
   forceKeyAuthentication: true
-  
+
   # Server list
   servers:
     lobby: "minibit-service:25566"
@@ -102,10 +102,10 @@ minibitServers:
   bridge: 25573
   bowfight: 25574
   boxing: 25575
-  
+
   # Maximum players per server
   maxPlayers: 50
-  
+
   # Connection mode: 3 for Velocity modern forwarding
   connectionMode: 3
 

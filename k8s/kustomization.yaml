@@ -8,6 +8,7 @@ resources:
   - secret.yaml
   - velocity-config.yaml
   - minibit-pvc.yaml
+  - minibit-init-job.yaml
   - velocity-deployment.yaml
   - velocity-service.yaml
   - minibit-deployment.yaml
