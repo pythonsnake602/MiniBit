@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minibit
+  namespace: minibit
+  labels:
+    app: minibit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minibit
+  template:
+    metadata:
+      labels:
+        app: minibit
+    spec:
+      containers:
+      - name: minibit
+        image: pythonsnake602/minibit:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/minibit"]
+        args: ["--auto", "/run"]
+        env:
+        - name: FORWARDING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: minibit-secret
+              key: FORWARDING_SECRET
+        volumeMounts:
+        - name: minibit-config
+          mountPath: /run
+        ports:
+        - containerPort: 25566
+          name: lobby
+          protocol: TCP
+        - containerPort: 25567
+          name: parkour
+          protocol: TCP
+        - containerPort: 25568
+          name: sumo
+          protocol: TCP
+        - containerPort: 25569
+          name: spaceshooter
+          protocol: TCP
+        - containerPort: 25570
+          name: classic
+          protocol: TCP
+        - containerPort: 25571
+          name: trainchase
+          protocol: TCP
+        - containerPort: 25572
+          name: bedwars
+          protocol: TCP
+        - containerPort: 25573
+          name: bridge
+          protocol: TCP
+        - containerPort: 25574
+          name: bowfight
+          protocol: TCP
+        - containerPort: 25575
+          name: boxing
+          protocol: TCP
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          tcpSocket:
+            port: 25566
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 25566
+          initialDelaySeconds: 30
+          periodSeconds: 5
+      volumes:
+      - name: minibit-config
+        persistentVolumeClaim:
+          claimName: minibit-config-pvc

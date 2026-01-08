@@ -1,0 +1,119 @@
+# MiniBit Kubernetes Configuration Values
+#
+# This file documents the key configuration values you may want to customize
+# Copy and modify this file to match your environment
+
+# Docker Image Configuration
+minibit:
+  image:
+    repository: pythonsnake602/minibit
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+  
+  replicas: 1
+
+velocity:
+  image:
+    repository: pythonsnake602/minibit-velocity
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  
+  replicas: 1
+
+# Service Configuration
+service:
+  # Type can be: LoadBalancer, NodePort, or ClusterIP
+  # LoadBalancer: Requires cloud provider support (AWS, GCP, Azure)
+  # NodePort: Exposes service on each node's IP at a static port
+  # ClusterIP: Only accessible within the cluster
+  type: LoadBalancer
+  
+  # For NodePort type, you can specify a port (30000-32767)
+  # Leave empty for automatic assignment
+  nodePort: ""
+  
+  # Minecraft server port
+  port: 25565
+
+# Storage Configuration
+storage:
+  # Size of persistent volume for world data and configs
+  size: 5Gi
+  
+  # Storage class name (leave empty for default)
+  # Examples: standard, gp2, fast-ssd, etc.
+  storageClassName: ""
+  
+  # Access mode
+  accessMode: ReadWriteOnce
+
+# Security Configuration
+security:
+  # Generate with: openssl rand -base64 12
+  # IMPORTANT: Change this before deploying!
+  forwardingSecret: "CHANGE_ME_PLEASE"
+
+# Velocity Proxy Configuration
+velocityConfig:
+  motd: "<#bfbfbf>The <red>Mini<blue>Bit <#bfbfbf>Network"
+  maxPlayers: 500
+  onlineMode: true
+  forceKeyAuthentication: true
+  
+  # Server list
+  servers:
+    lobby: "minibit-service:25566"
+    parkour: "minibit-service:25567"
+    sumo: "minibit-service:25568"
+    spaceshooter: "minibit-service:25569"
+    classic: "minibit-service:25570"
+    trainchase: "minibit-service:25571"
+    bedwars: "minibit-service:25572"
+    bridge: "minibit-service:25573"
+    bowfight: "minibit-service:25574"
+    boxing: "minibit-service:25575"
+
+# MiniBit Server Configuration
+minibitServers:
+  # Port configuration for each game server
+  lobby: 25566
+  parkour: 25567
+  sumo: 25568
+  spaceshooter: 25569
+  classic: 25570
+  trainchase: 25571
+  bedwars: 25572
+  bridge: 25573
+  bowfight: 25574
+  boxing: 25575
+  
+  # Maximum players per server
+  maxPlayers: 50
+  
+  # Connection mode: 3 for Velocity modern forwarding
+  connectionMode: 3
+
+# Monitoring (optional)
+monitoring:
+  enabled: false
+  # Add Prometheus annotations
+  prometheus:
+    enabled: false
+    port: 9090
+    path: /metrics

@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minibit-init
+  namespace: minibit
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: copy-config
+        image: pythonsnake602/minibit:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Copying configuration files..."
+            cp -r /app/run/* /run/
+            
+            echo "Configuring server ports..."
+            cd /run
+            
+            # Update server.json for each game server
+            echo '{"ip":"0.0.0.0","port":25566,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > lobby/server.json
+            echo '{"ip":"0.0.0.0","port":25567,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > parkour/server.json
+            echo '{"ip":"0.0.0.0","port":25568,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > sumo/server.json
+            echo '{"ip":"0.0.0.0","port":25569,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > spaceshooter/server.json
+            echo '{"ip":"0.0.0.0","port":25570,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > classic/server.json
+            echo '{"ip":"0.0.0.0","port":25571,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > trainchase/server.json
+            echo '{"ip":"0.0.0.0","port":25572,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > bedwars/server.json
+            echo '{"ip":"0.0.0.0","port":25573,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > bridge/server.json
+            echo '{"ip":"0.0.0.0","port":25574,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > bowfight/server.json
+            echo '{"ip":"0.0.0.0","port":25575,"max_players":50,"connection_mode":3,"prevent_proxy_connections":false}' > boxing/server.json
+            
+            echo "Configuration complete!"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /run
+        - name: run-source
+          mountPath: /app/run
+      containers:
+      - name: complete
+        image: busybox:latest
+        command: ['sh', '-c', 'echo "Init job complete"']
+      restartPolicy: Never
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: minibit-config-pvc
+      - name: run-source
+        emptyDir: {}
+  backoffLimit: 3

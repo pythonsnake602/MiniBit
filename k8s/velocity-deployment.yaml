@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velocity-proxy
+  namespace: minibit
+  labels:
+    app: velocity-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: velocity-proxy
+  template:
+    metadata:
+      labels:
+        app: velocity-proxy
+    spec:
+      containers:
+      - name: velocity
+        image: pythonsnake602/minibit-velocity:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 25565
+          name: minecraft
+          protocol: TCP
+        env:
+        - name: VELOCITY_FORWARDING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: minibit-secret
+              key: VELOCITY_FORWARDING_SECRET
+        volumeMounts:
+        - name: velocity-config
+          mountPath: /proxy/velocity.toml
+          subPath: velocity.toml
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          tcpSocket:
+            port: 25565
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 25565
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: velocity-config
+        configMap:
+          name: velocity-config
