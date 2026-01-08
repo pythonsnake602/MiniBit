@@ -167,12 +167,13 @@ fn handle_player_actions(
 }
 
 pub fn apply_arrow_physics(
-    mut arrows: Query<(Entity, &mut Position, &mut Velocity), With<ArrowEntity>>,
+    mut arrows: Query<(Entity, &mut Position, &mut Velocity, &EntityLayerId), With<ArrowEntity>>,
     players: Query<(Entity, &Position, &Velocity), (With<Client>, Without<ArrowEntity>)>,
+    mut layers: Query<&mut ChunkLayer>,
     mut collisions: EventWriter<ProjectileCollisionEvent>,
     mut commands: Commands,
 ) {
-    for (entity, mut pos, mut vel) in arrows.iter_mut() {
+    for (entity, mut pos, mut vel, layer_id) in arrows.iter_mut() {
         pos.0 += DVec3::from(vel.0) / 20.0;
 
         // Gravity
@@ -180,6 +181,22 @@ pub fn apply_arrow_physics(
 
         // Air resistance
         vel.0 *= 0.99;
+
+        // Check for collisions with blocks
+        if let Ok(chunk_layer) = layers.get_mut(layer_id.0) {
+            let block_pos = BlockPos::new(
+                pos.0.x.floor() as i32,
+                pos.0.y.floor() as i32,
+                pos.0.z.floor() as i32,
+            );
+            if let Some(block) = chunk_layer.block(block_pos) {
+                // If the block is not air and not replaceable (i.e., it's solid), despawn the arrow
+                if block.state != BlockState::AIR && !block.state.is_replaceable() {
+                    commands.entity(entity).insert(Despawned);
+                    continue;
+                }
+            }
+        }
 
         // Check for collisions (Arrow's have a hitbox of 0.5x0.5x0.5 and players have a hitbox of 0.6x1.8x0.6)
         let arrow_shape = Cuboid::new(Vector::new(0.5, 0.5, 0.5));
