@@ -169,7 +169,7 @@ fn handle_player_actions(
 pub fn apply_arrow_physics(
     mut arrows: Query<(Entity, &mut Position, &mut Velocity, &EntityLayerId), With<ArrowEntity>>,
     players: Query<(Entity, &Position, &Velocity), (With<Client>, Without<ArrowEntity>)>,
-    mut layers: Query<&mut ChunkLayer>,
+    layers: Query<&ChunkLayer>,
     mut collisions: EventWriter<ProjectileCollisionEvent>,
     mut commands: Commands,
 ) {
@@ -183,7 +183,7 @@ pub fn apply_arrow_physics(
         vel.0 *= 0.99;
 
         // Check for collisions with blocks
-        if let Ok(chunk_layer) = layers.get_mut(layer_id.0) {
+        if let Ok(chunk_layer) = layers.get(layer_id.0) {
             let block_pos = BlockPos::new(
                 pos.0.x.floor() as i32,
                 pos.0.y.floor() as i32,
