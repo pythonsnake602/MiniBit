@@ -68,7 +68,6 @@ pub fn main(path: PathBuf) {
                 init_clients.after(minibit_lib::duels::map::init_clients::<DefaultDuelsConfig>),
                 start_game,
                 handle_block_interactions,
-                update_scoreboard,
             ),
         )
         .run();
@@ -174,10 +173,4 @@ fn handle_block_interactions(
             }
         }
     }
-}
-
-fn update_scoreboard(
-    _clients: Query<(&Client, &BoxMixState, &PlayerGameState)>,
-) {
-    // Could be used for future UI updates if needed
 }
