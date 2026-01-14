@@ -15,7 +15,7 @@ serde = "1.0.204"
 serde_json = "1.0.120"
 #valence = { git = "https://github.com/valence-rs/valence" }
 valence = { git = "https://github.com/pythonsnake602/valence" }
-valence_anvil = { git = "https://github.com/valence-rs/valence" }
+valence_anvil = { git = "https://github.com/pythonsnake602/valence" }
 
 [lib]
 name = "minibit_lib"
