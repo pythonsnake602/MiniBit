@@ -16,5 +16,8 @@ function build_velocity {
 
 (build_velocity)
 
+SECRET=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
+echo -e "FORWARDING_SECRET=$SECRET\nVELOCITY_FORWARDING_SECRET=$SECRET" > .env
+
 set -a && source run.tmp/.env && set +a
 tmux new-session -d "cargo run -- --auto run.tmp" \; split-window "VELOCITY_FORWARDING_SECRET=$FORWARDING_SECRET cd run.tmp/proxy && java -jar ./velocity.jar" \; attach
