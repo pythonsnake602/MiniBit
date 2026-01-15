@@ -35,6 +35,9 @@ jobs:
         sudo apt-get install libpq-dev
     - name: Install libpq with homebrew
       if: ${{ runner.os == 'macOS' }}
+      env:
+        LDFLAGS: -L/opt/homebrew/opt/libpq/lib
+        CPPFLAGS: -I/opt/homebrew/opt/libpq/include
       run: |
         brew install libpq
     - name: Build
