@@ -48,10 +48,12 @@ use valence::protocol::sound::SoundCategory;
 use valence::protocol::Sound;
 use valence::protocol::VarInt;
 use valence::protocol::WritePacket;
+use minibit_lib::bench::BenchPlugin;
 use minibit_lib::death::{DeathEvent, DeathPlugin, DeathSet};
 use minibit_lib::duels::oob::{OobMode, OobPlugin};
 use minibit_lib::food::golden_apple::GoldenApplePlugin;
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
 #[derive(Event)]
 struct ScoreEvent (Entity);
@@ -90,22 +92,27 @@ impl DuelsConfig for BridgeConfig {
     }
 }
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(DuelsPlugin::<BridgeConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             default_gamemode: GameMode::Survival,
             copy_map: true,
             phantom: PhantomData,
         })
         .add_plugins(DefaultPlugins)
         .add_plugins((
+            TelemetryPlugin {
+                name: "bridge".to_string(),
+                config: config.telemetry,
+            },
             InteractionBroadcastPlugin,
             DisableDropPlugin,
             ProjectilePlugin,
             DeathPlugin,
             GoldenApplePlugin,
+            BenchPlugin,
             DiggingPlugin {
                 whitelist: vec![
                     BlockKind::BlueTerracotta,

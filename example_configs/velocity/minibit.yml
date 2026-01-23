@@ -21,6 +21,7 @@ bridge:
   path: bridge
   network:
     port: 25569
+    max_players: 1000
 classic:
   enabled: true
   path: classic
@@ -31,6 +32,7 @@ lobby:
   path: lobby
   network:
     port: 25571
+    max_players: 1000
 parkour:
   enabled: true
   path: parkour

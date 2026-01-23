@@ -29,9 +29,11 @@ use serde::Deserialize;
 use valence::{
     entity::{living::Health, player::{PlayerEntityBundle, PlayerModelParts}}, event_loop::PacketEvent, inventory::{ClickSlotEvent, HeldItem}, message::{ChatMessageEvent, SendMessage}, nbt::{compound, List}, player_list::{DisplayName, Listed, PlayerListEntryBundle}, prelude::*, protocol::{packets::play::PlayerInteractItemC2s, sound::SoundCategory, Sound}
 };
+use valence::log::LogPlugin;
 use valence_anvil::AnvilLevel;
 use minibit_lib::config::DataPath;
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
 #[derive(Deserialize, Clone)]
 enum ActionType {
@@ -91,15 +93,23 @@ struct ParkourStatus {
     end: DVec3,
 }
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(ConfigLoaderPlugin::<LobbyConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             phantom: PhantomData,
         })
-        .add_plugins(DefaultPlugins)
-        .add_plugins((ScopePlugin, commands::CommandPlugin, InteractionBroadcastPlugin))
+        .add_plugins(DefaultPlugins.build().disable::<LogPlugin>())
+        .add_plugins((
+            TelemetryPlugin {
+                name: "lobby".to_string(),
+                config: config.telemetry,
+            },
+            ScopePlugin,
+            commands::CommandPlugin,
+            InteractionBroadcastPlugin
+        ))
         .insert_resource(ServerGlobals {
             navigator_gui: None,
         })

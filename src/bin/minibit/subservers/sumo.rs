@@ -29,22 +29,29 @@ use valence::protocol::sound::SoundCategory;
 use valence::protocol::{Sound, WritePacket};
 use valence::protocol::VarInt;
 use minibit_lib::duels::oob::{OobMode, OobPlugin};
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(DuelsPlugin::<DefaultDuelsConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             default_gamemode: GameMode::Adventure,
             copy_map: false,
             phantom: PhantomData
         })
         .add_plugins(DefaultPlugins)
-        .add_plugins(OobPlugin {
-            mode: OobMode::GameEndEvent,
-            bounds_y: 0.0..,
-        })
+        .add_plugins((
+            TelemetryPlugin {
+                name: "sumo".to_string(),
+                config: config.telemetry,
+            },
+            OobPlugin {
+                mode: OobMode::GameEndEvent,
+                bounds_y: 0.0..,
+            }
+        ))
         .add_systems(EventLoopUpdate, handle_combat_events)
         .run();
 }

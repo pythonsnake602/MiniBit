@@ -27,3 +27,5 @@ pub mod player;
 pub mod projectiles;
 pub mod scopes;
 pub mod world;
+pub mod bench;
+pub mod telemetry;

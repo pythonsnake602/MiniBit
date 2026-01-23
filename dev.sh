@@ -33,4 +33,4 @@ cp example_configs/velocity/velocity.toml run.tmp/proxy/velocity.toml
 SECRET=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
 echo "$SECRET" > run.tmp/proxy/forwarding.secret
 
-tmux new-session -d "MINIBIT_FORWARDING_SECRET=$SECRET cargo run -- -c example_configs/velocity/minibit.yml" \; split-window "cd run.tmp/proxy && java -jar ./velocity.jar" \; attach
+tmux new-session -d "MINIBIT_FORWARDING_SECRET=$SECRET cargo run -r -- -c example_configs/velocity/minibit.yml" \; split-window "cd run.tmp/proxy && java -jar ./velocity.jar" \; attach

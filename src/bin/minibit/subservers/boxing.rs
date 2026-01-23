@@ -29,23 +29,28 @@ use valence::protocol::sound::SoundCategory;
 use valence::protocol::Sound;
 use valence::protocol::VarInt;
 use valence::protocol::WritePacket;
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
 #[derive(Component, Default)]
 struct BoxingState {
     hits: u8,
 }
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(DuelsPlugin::<DefaultDuelsConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             default_gamemode: GameMode::Adventure,
             copy_map: false,
             phantom: PhantomData
         })
         .add_plugins(DefaultPlugins)
+        .add_plugins(TelemetryPlugin {
+            name: "boxing".to_string(),
+            config: config.telemetry,
+        })
         .add_systems(EventLoopUpdate, handle_combat_events)
         .add_systems(
             Update,

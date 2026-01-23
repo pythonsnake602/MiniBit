@@ -1,0 +1,6 @@
+boxing:
+  enabled: true
+  path: boxing
+  network:
+    port: 25565
+    max_players: 1000

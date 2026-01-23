@@ -1,0 +1,6 @@
+bridge:
+  enabled: true
+  path: bridge
+  network:
+    port: 25565
+    max_players: 1000

@@ -14,8 +14,29 @@ figment = { version = "0.10.19", features = ["env", "yaml"] }
 parry3d = "0.17.0"
 serde = "1.0.204"
 serde_json = "1.0.120"
-valence = { git = "https://github.com/valence-rs/valence" }
+valence = { git = "https://github.com/valence-rs/valence", default-features = false, features = [
+    "advancement",
+    "anvil",
+    "boss_bar",
+    "equipment",
+    "inventory",
+    "network",
+    "player_list",
+    "scoreboard",
+    "world_border",
+    "command",
+    "weather",
+    "testing",
+    "log",
+] }
 valence_anvil = { git = "https://github.com/valence-rs/valence" }
+#bevy = { version = "0.14.2", default-features = false, features = [ "trace" ] }
+#bevy_log = { version = "0.14.2" }
+tracing-opentelemetry = "0.32.1"
+opentelemetry = "0.31.0"
+opentelemetry-otlp = "0.31.0"
+opentelemetry_sdk = "0.31.0"
+tracing = "0.1.40"
 
 [lib]
 name = "minibit_lib"

@@ -26,7 +26,8 @@ use minibit_lib::config::{ConfigLoaderPlugin, EmptyConfig};
 use valence::prelude::*;
 use valence::protocol::sound::{Sound, SoundCategory};
 use valence::spawn::IsFlat;
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
 const START_POS: BlockPos = BlockPos::new(0, 100, 0);
 const VIEW_DIST: u8 = 10;
@@ -41,14 +42,18 @@ const BLOCK_TYPES: [BlockState; 7] = [
     BlockState::MOSS_BLOCK,
 ];
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(ConfigLoaderPlugin::<EmptyConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             phantom: PhantomData
         })
         .add_plugins(DefaultPlugins)
+        .add_plugins(TelemetryPlugin {
+            name: "parkour".to_string(),
+            config: config.telemetry,
+        })
         .add_systems(
             Update,
             (

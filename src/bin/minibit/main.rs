@@ -20,6 +20,7 @@ mod subservers {
     automod::dir!(pub "src/bin/minibit/subservers");
 }
 
+use std::error::Error;
 use crate::subservers::*;
 use clap::{Args, FromArgMatches, arg, command, value_parser};
 use figment::providers::{Env, Serialized};
@@ -32,13 +33,18 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::thread;
 use std::thread::JoinHandle;
+use opentelemetry::global;
+use opentelemetry_otlp::{Protocol, WithExportConfig};
+use valence::log::tracing_subscriber::layer::SubscriberExt;
+use valence::log::tracing_subscriber::Registry;
+use minibit_lib::telemetry::TelemetryConfig;
 
 #[macro_export]
 macro_rules! subserver {
     ($server:ident, $config:expr) => {
         (
             stringify!($server),
-            $server::main as fn(ServerConfig),
+            $server::main as fn(GlobalConfig, ServerConfig),
             $config.$server,
         )
     };
@@ -68,12 +74,19 @@ impl Default for ForwardingConfig {
     }
 }
 
+#[derive(Copy, Clone)]
+struct GlobalConfig {
+    telemetry: TelemetryConfig,
+}
+
 #[rustfmt::skip]
 #[derive(Args, Default, Deserialize, Serialize)]
 #[serde(default)]
 struct Config {
     #[arg(long, default_value = "data")]
     data_path: PathBuf,
+
+    #[clap(skip)] telemetry: TelemetryConfig,
 
     #[clap(skip)] forwarding: ForwardingConfig,
 
@@ -87,6 +100,31 @@ struct Config {
     #[clap(skip)] spaceshooter: ServerConfig,
     #[clap(skip)] sumo: ServerConfig,
     #[clap(skip)] trainchase: ServerConfig,
+}
+
+fn enable_trace() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    let otlp_exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_http()
+        .with_protocol(Protocol::HttpBinary)
+        .build()?;
+
+    // Create a tracer provider with the exporter
+    let tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
+        .with_batch_exporter(otlp_exporter)
+        .build();
+
+    // Set it as the global provider
+    global::set_tracer_provider(tracer_provider);
+
+    let tracer = global::tracer("bevy");
+
+    let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+
+    let subscriber = Registry::default().with(telemetry);
+
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    Ok(())
 }
 
 fn main() {
@@ -118,8 +156,15 @@ fn main() {
 
     let config = config.unwrap();
 
+    if config.telemetry.tracing {
+        println!("Enabling tracing");
+        if let Err(e) = enable_trace() {
+            eprintln!("Tracing Error: {}", e)
+        }
+    }
+
     #[allow(clippy::type_complexity)]
-    let subservers: Vec<(&str, fn(ServerConfig), ServerConfig)> = vec![
+    let subservers: Vec<(&str, fn(GlobalConfig, ServerConfig), ServerConfig)> = vec![
         subserver!(lobby, config),
         subserver!(bedwars, config),
         subserver!(bowfight, config),
@@ -134,6 +179,10 @@ fn main() {
 
     let mut handles: Vec<JoinHandle<()>> = Vec::new();
 
+    let global_config = GlobalConfig {
+        telemetry: config.telemetry,
+    };
+    
     for (server, run, server_config) in subservers {
         if !server_config.enabled {
             continue;
@@ -145,9 +194,10 @@ fn main() {
         cloned_config.network.connection_mode = config.forwarding.mode;
         println!("{}", cloned_config.network.forwarding_secret);
 
+
         println!("Starting server {}", server);
         handles.push(thread::spawn(move || {
-            run(cloned_config);
+            run(global_config, cloned_config);
         }));
     }
 

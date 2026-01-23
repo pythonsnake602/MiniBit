@@ -44,7 +44,8 @@ use valence::{
     },
     spawn::IsFlat,
 };
-use crate::ServerConfig;
+use minibit_lib::telemetry::TelemetryPlugin;
+use crate::{GlobalConfig, ServerConfig};
 
 const START_POS: DVec3 = DVec3::new(0.0, 100.0, 0.0);
 const VIEW_DIST: u8 = 10;
@@ -81,14 +82,18 @@ struct IsCop;
 #[derive(Component)]
 struct Owner(Entity);
 
-pub fn main(config: ServerConfig) {
+pub fn main(config: GlobalConfig, server_config: ServerConfig) {
     App::new()
         .add_plugins(ConfigLoaderPlugin::<EmptyConfig> {
-            path: config.path,
-            network_config: config.network,
+            path: server_config.path,
+            network_config: server_config.network,
             phantom: PhantomData,
         })
         .add_plugins(DefaultPlugins)
+        .add_plugins(TelemetryPlugin {
+            name: "trainchase".to_string(),
+            config: config.telemetry,
+        })
         .insert_resource(Tick(0))
         .add_systems(EventLoopUpdate, handle_interactions)
         .add_systems(
