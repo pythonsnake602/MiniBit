@@ -1,0 +1,2 @@
+# Default everything to opt level 3, override other crates manually
+build --java_runtime_version=21 --java_language_version=21 --@rules_rust//rust/settings:extra_rustc_flag="--codegen=opt-level=3"

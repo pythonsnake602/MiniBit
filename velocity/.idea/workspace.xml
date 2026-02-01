@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9d5fe9c4-9679-4d19-a60f-a83436927d6c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../src/lib/telemetry.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tools/profiling/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tools/profiling/compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tools/profiling/profile.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../dev.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../example_configs/velocity/minibit.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../example_configs/velocity/minibit.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../example_configs/velocity/velocity.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../example_configs/velocity/velocity.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/bedwars.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/bedwars.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/bowfight.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/bowfight.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/boxing.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/boxing.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/bridge.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/bridge.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/classic.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/classic.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/lobby.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/lobby.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/parkour.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/parkour.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/spaceshooter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/spaceshooter.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/sumo.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/sumo.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/bin/minibit/subservers/trainchase.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/bin/minibit/subservers/trainchase.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/lib/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../src/lib/mod.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation>
+            <after_sync>
+              <task name="generateTemplates" />
+            </after_sync>
+          </activation>
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MiniBitVelocity" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="4WsCzPHR" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="38N5jBeGVl4a50rmUROMidxAuYo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.velocity [generateTemplates].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.restore.workspace.module": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "fix-copied-duel-system-order",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.first.attach.projects": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="MiniBitVelocity" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="MiniBitVelocity" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="MiniBitVelocity" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="MiniBitVelocity" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.240" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.240" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9d5fe9c4-9679-4d19-a60f-a83436927d6c" name="Changes" comment="" />
+      <created>1768627320793</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1768627320793</updated>
+      <workItem from="1768627321889" duration="5161000" />
+      <workItem from="1768691200496" duration="9215000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -1,0 +1,9 @@
+telemetry:
+  tracing: true
+
+lobby:
+  enabled: true
+  path: lobby
+  network:
+    port: 25565
+    max_players: 1000
