@@ -5,36 +5,36 @@ use std::time::SystemTime;
 
 use crate::ServerConfig;
 use bevy_ecs::query::QueryData;
-use minibit_lib::color::{format, ArmorColors};
+use chunkedge::entity::Velocity;
+use chunkedge::entity::living::Absorption;
+use chunkedge::entity::living::Health;
+use chunkedge::entity::{EntityId, EntityStatuses};
+use chunkedge::equipment::EquipmentInventorySync;
+use chunkedge::inventory::HeldItem;
+use chunkedge::item::ItemComponent;
+use chunkedge::math::IVec3;
+use chunkedge::math::Vec3Swizzles;
+use chunkedge::prelude::*;
+use chunkedge::protocol::Sound;
+use chunkedge::protocol::VarInt;
+use chunkedge::protocol::WritePacket;
+use chunkedge::protocol::packets::play::{HurtAnimationS2c, SetExperienceS2c};
+use chunkedge::protocol::sound::SoundCategory;
+use chunkedge::scoreboard::Objective;
+use chunkedge::scoreboard::ObjectiveScores;
+use minibit_lib::color::{ArmorColors, format};
 use minibit_lib::config::WorldValue;
 use minibit_lib::damage::calc_dmg;
 use minibit_lib::damage::calc_dmg_with_weapon;
-use minibit_lib::death::{DeathMessage, DeathPlugin, DeathSet};
+use minibit_lib::death::{DeathEvent, DeathPlugin};
 use minibit_lib::duels::oob::{OobMode, OobPlugin};
 use minibit_lib::duels::*;
 use minibit_lib::food::golden_apple::GoldenApplePlugin;
 use minibit_lib::player::*;
 use minibit_lib::projectiles::*;
-use minibit_lib::scoreboard::{gen_scores, ScoreboardId, ScoreboardMode, ScoreboardPlugin};
+use minibit_lib::scoreboard::{ScoreboardId, ScoreboardMode, ScoreboardPlugin, gen_scores};
 use minibit_lib::world::*;
 use serde::Deserialize;
-use chunkedge::entity::living::Absorption;
-use chunkedge::entity::living::Health;
-use chunkedge::entity::Velocity;
-use chunkedge::entity::{EntityId, EntityStatuses};
-use chunkedge::equipment::EquipmentInventorySync;
-use chunkedge::inventory::HeldItem;
-use chunkedge::math::IVec3;
-use chunkedge::math::Vec3Swizzles;
-use chunkedge::prelude::*;
-use chunkedge::protocol::packets::play::{HurtAnimationS2c, SetExperienceS2c};
-use chunkedge::protocol::sound::SoundCategory;
-use chunkedge::protocol::Sound;
-use chunkedge::protocol::VarInt;
-use chunkedge::protocol::WritePacket;
-use chunkedge::scoreboard::ObjectiveScores;
-use chunkedge::scoreboard::Objective;
-use chunkedge::item::ItemComponent;
 
 #[derive(Message)]
 struct ScoreMessage (Entity);
@@ -122,6 +122,7 @@ pub fn main(config: ServerConfig) {
         ))
         .add_message::<ScoreMessage>()
         .add_message::<MessageMessage>()
+        .add_observer(handle_death)
         .add_systems(Startup, setup)
         .add_systems(EventLoopUpdate, handle_combat_events)
         .add_systems(
@@ -134,8 +135,7 @@ pub fn main(config: ServerConfig) {
                 check_goals,
                 update_bow_cooldown,
                 handle_collision_events,
-                handle_death.after(DeathSet),
-                handle_score.after(check_goals).before(handle_death),
+                handle_score.after(check_goals),
                 update_scoreboard.after(handle_score),
                 game_broadcast,
             ),
@@ -293,7 +293,7 @@ fn check_goals(
     clients: Query<(Entity, &Position, &PlayerGameState), With<Client>>,
     config: Res<BridgeConfig>,
     mut scores: MessageWriter<ScoreMessage>,
-    mut deaths: MessageWriter<DeathMessage>,
+    mut commands: Commands,
 ) {
     for (entity, pos, gamestate) in clients.iter() {
         if gamestate.game_id.is_some() {
@@ -303,7 +303,10 @@ fn check_goals(
                     && (goal[4]..=goal[5]).contains(&(pos.0.z as i32))
                 {
                     if gamestate.team == i as u8 {
-                        deaths.write(DeathMessage(entity, true));
+                        commands.trigger(DeathEvent {
+                            entity,
+                            show: true,
+                        });
                     } else {
                         scores.write(ScoreMessage(entity));
                     }
@@ -374,7 +377,7 @@ fn handle_combat_events(
     mut clients: Query<CombatQuery>,
     mut sprinting: MessageReader<SprintMessage>,
     mut interact_entity: MessageReader<InteractEntityMessage>,
-    mut deaths: MessageWriter<DeathMessage>,
+    mut commands: Commands,
 ) {
     for &SprintMessage { client, state } in sprinting.read() {
         if let Ok(mut client) = clients.get_mut(client) {
@@ -433,7 +436,7 @@ fn handle_combat_events(
             &mut victim,
             dmg,
             Vec3::new(dir.x * knockback_xz, knockback_y, dir.y * knockback_xz),
-            &mut deaths,
+            &mut commands,
         );
 
         attacker.state.has_bonus_knockback = false;
@@ -444,7 +447,7 @@ fn handle_collision_events(
     mut clients: Query<CombatQuery>,
     arrows: Query<(&Velocity, &ProjectileOwner)>,
     mut collisions: MessageReader<ProjectileCollisionMessage>,
-    mut deaths: MessageWriter<DeathMessage>,
+    mut commands: Commands,
 ) {
     for message in collisions.read() {
         if let Ok((vel, owner)) = arrows.get(message.arrow)
@@ -468,7 +471,7 @@ fn handle_collision_events(
                 &mut victim,
                 dmg,
                 vel.0.normalize().with_y(0.0).as_vec3() * 0.6 * 20.0, // TODO: Make the knockback accurate
-                &mut deaths,
+                &mut commands,
             );
             attacker.client.play_sound(
                 Sound::EntityArrowHitPlayer,
@@ -482,6 +485,7 @@ fn handle_collision_events(
 }
 
 fn handle_death(
+    event: On<DeathEvent>,
     mut clients: Query<
         (
             &mut Position,
@@ -499,72 +503,73 @@ fn handle_death(
     >,
     usernames: Query<&Username, With<Client>>,
     games: Query<&MapIndex>,
-    mut deaths: MessageReader<DeathMessage>,
     mut broadcasts: MessageWriter<MessageMessage>,
     config: Res<BridgeConfig>,
 ) {
-    let mut killers = Vec::new();
-    for DeathMessage(entity, show) in deaths.read() {
-        if let Ok((
-            mut pos,
-            mut look,
-            mut head_yaw,
-            mut health,
-            mut absorption,
-            mut inventory,
-            username,
-            gamestate,
-            mut combatstate,
-            mut stats,
-        )) = clients.get_mut(*entity)
-            && let Some(game_id) = gamestate.game_id
-            && let Ok(map_index) = games.get(game_id)
-        {
-            if *show {
-                stats.deaths += 1;
-                if let Some(last_attacker) = combatstate.last_attacker {
-                    killers.push(last_attacker);
-                }
+    let mut killer: Option<Entity> = None;
+    let entity = event.entity;
+    let show = event.show;
+
+    if let Ok((
+        mut pos,
+        mut look,
+        mut head_yaw,
+        mut health,
+        mut absorption,
+        mut inventory,
+        username,
+        gamestate,
+        mut combatstate,
+        mut stats,
+    )) = clients.get_mut(entity)
+        && let Some(game_id) = gamestate.game_id
+        && let Ok(map_index) = games.get(game_id)
+    {
+        if show {
+            stats.deaths += 1;
+            if let Some(last_attacker) = combatstate.last_attacker {
+                killer = Some(last_attacker);
             }
-            let spawn = &config.worlds[map_index.0].spawns[gamestate.team as usize];
-            pos.0 = spawn.pos.into();
-            look.yaw = spawn.rot[0];
-            look.pitch = spawn.rot[1];
-            head_yaw.0 = spawn.rot[0];
-            health.0 = 20.0;
-            absorption.0 = 0.0;
-            for slot in 0..inventory.slot_count() {
-                inventory.set_slot(slot, ItemStack::EMPTY);
-            }
-            fill_inventory(&mut inventory, gamestate.team);
-            if *show {
-                broadcasts.write(MessageMessage {
-                    game: game_id,
-                    msg: Text::from(username.0.clone()).color(if gamestate.team == 0 {
-                        Color::BLUE
-                    } else {
-                        Color::RED
-                    }) + if let Some(attacker) = combatstate.last_attacker {
-                        if let Ok(username) = usernames.get(attacker) {
-                            Text::from(" was killed by ").color(Color::GRAY)
-                                + Text::from(username.0.clone()).color(if gamestate.team == 0 {
-                                    Color::RED
-                                } else {
-                                    Color::BLUE
-                                })
-                        } else {
-                            Text::from(" has died!").color(Color::GRAY)
-                        }
+        }
+        let spawn = &config.worlds[map_index.0].spawns[gamestate.team as usize];
+        pos.0 = spawn.pos.into();
+        look.yaw = spawn.rot[0];
+        look.pitch = spawn.rot[1];
+        head_yaw.0 = spawn.rot[0];
+        health.0 = 20.0;
+        absorption.0 = 0.0;
+        for slot in 0..inventory.slot_count() {
+            inventory.set_slot(slot, ItemStack::EMPTY);
+        }
+        fill_inventory(&mut inventory, gamestate.team);
+        if show {
+            broadcasts.write(MessageMessage {
+                game: game_id,
+                msg: Text::from(username.0.clone()).color(if gamestate.team == 0 {
+                    Color::BLUE
+                } else {
+                    Color::RED
+                }) + if let Some(attacker) = combatstate.last_attacker {
+                    if let Ok(username) = usernames.get(attacker) {
+                        Text::from(" was killed by ").color(Color::GRAY)
+                            + Text::from(username.0.clone()).color(if gamestate.team == 0 {
+                                Color::RED
+                            } else {
+                                Color::BLUE
+                            })
                     } else {
                         Text::from(" has died!").color(Color::GRAY)
-                    },
-                });
-            }
-            combatstate.last_attacker = None;
+                    }
+                } else {
+                    Text::from(" has died!").color(Color::GRAY)
+                },
+            });
         }
+        combatstate.last_attacker = None;
     }
-    for killer in killers {
-        if let Ok(mut killer) = clients.get_mut(killer) {
+
+    if let Some(entity) = killer {
+        if let Ok(mut killer) = clients.get_mut(entity) {
             killer.9.kills += 1;
         }
     }
@@ -574,10 +579,10 @@ fn handle_score(
     clients: Query<(&Username, &PlayerGameState), With<Client>>,
     mut games: Query<(&Entities, &mut GameStage, &mut GameTime, &mut GameData)>,
     mut scores: MessageReader<ScoreMessage>,
-    mut deaths: MessageWriter<DeathMessage>,
     mut broadcasts: MessageWriter<MessageMessage>,
     mut gamestage: MessageWriter<GameStageMessage>,
     mut end_game: MessageWriter<EndGameMessage>,
+    mut commands: Commands,
 ) {
     for ScoreMessage(player) in scores.read() {
         let Ok((username, gamestate)) = clients.get(*player) else {
@@ -596,7 +601,10 @@ fn handle_score(
         }
         data.0.insert(team, DataValue::Int(score));
         for entity in entities.0.iter() {
-            deaths.write(DeathMessage(*entity, false));
+            commands.trigger(DeathEvent {
+                entity: *entity,
+                show: false,
+            })
         }
         broadcasts.write(MessageMessage {
             game,
@@ -679,7 +687,7 @@ fn damage_player(
     victim: &mut CombatQueryItem,
     damage: f32,
     velocity: Vec3,
-    deaths: &mut MessageWriter<DeathMessage>,
+    commands: &mut Commands,
 ) {
     let old_vel = Vec3::new(
         (victim.pos.0.x - victim.old_pos.get().x) as f32,
@@ -722,7 +730,10 @@ fn damage_player(
         victim.absorption.0 -= damage.min(victim.absorption.0);
     }
     if victim.health.0 <= new_damage {
-        deaths.write(DeathMessage(victim.entity, true));
+        commands.trigger(DeathEvent {
+            entity: victim.entity,
+            show: true,
+        });
     } else {
         victim.health.0 -= new_damage;
     }

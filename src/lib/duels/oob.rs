@@ -1,4 +1,4 @@
-use crate::death::DeathMessage;
+use crate::death::DeathEvent;
 use crate::duels::{EndGameMessage, PlayerGameState};
 use chunkedge::prelude::*;
 use std::ops::RangeBounds;
@@ -42,14 +42,17 @@ where
 
 fn handle_oob_clients_death<R>(
     positions: Query<(Entity, &Position, &PlayerGameState), With<Client>>,
-    mut deaths: MessageWriter<DeathMessage>,
     oob: Res<OobResource<R>>,
+    mut commands: Commands,
 ) where
     R: RangeBounds<f64> + Send + Sync + Clone + 'static,
 {
     for (entity, pos, gamestate) in positions.iter() {
         if !oob.bounds_y.contains(&pos.y) && gamestate.game_id.is_some() {
-            deaths.write(DeathMessage(entity, true));
+            commands.trigger(DeathEvent {
+                entity,
+                show: true,
+            });
         }
     }
 }
